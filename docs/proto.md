@@ -972,6 +972,11 @@
     - [Rpc.ObjectType.Relation.Remove.Request](#anytype-Rpc-ObjectType-Relation-Remove-Request)
     - [Rpc.ObjectType.Relation.Remove.Response](#anytype-Rpc-ObjectType-Relation-Remove-Response)
     - [Rpc.ObjectType.Relation.Remove.Response.Error](#anytype-Rpc-ObjectType-Relation-Remove-Response-Error)
+    - [Rpc.Plugin](#anytype-Rpc-Plugin)
+    - [Rpc.Plugin.Example](#anytype-Rpc-Plugin-Example)
+    - [Rpc.Plugin.Example.Request](#anytype-Rpc-Plugin-Example-Request)
+    - [Rpc.Plugin.Example.Response](#anytype-Rpc-Plugin-Example-Response)
+    - [Rpc.Plugin.Example.Response.Error](#anytype-Rpc-Plugin-Example-Response-Error)
     - [Rpc.Process](#anytype-Rpc-Process)
     - [Rpc.Process.Cancel](#anytype-Rpc-Process-Cancel)
     - [Rpc.Process.Cancel.Request](#anytype-Rpc-Process-Cancel-Request)
@@ -1360,6 +1365,7 @@
     - [Rpc.ObjectRelation.RemoveFeatured.Response.Error.Code](#anytype-Rpc-ObjectRelation-RemoveFeatured-Response-Error-Code)
     - [Rpc.ObjectType.Relation.Add.Response.Error.Code](#anytype-Rpc-ObjectType-Relation-Add-Response-Error-Code)
     - [Rpc.ObjectType.Relation.Remove.Response.Error.Code](#anytype-Rpc-ObjectType-Relation-Remove-Response-Error-Code)
+    - [Rpc.Plugin.Example.Response.Error.Code](#anytype-Rpc-Plugin-Example-Response-Error-Code)
     - [Rpc.Process.Cancel.Response.Error.Code](#anytype-Rpc-Process-Cancel-Response-Error-Code)
     - [Rpc.Relation.ListRemoveOption.Response.Error.Code](#anytype-Rpc-Relation-ListRemoveOption-Response-Error-Code)
     - [Rpc.Relation.Options.Response.Error.Code](#anytype-Rpc-Relation-Options-Response-Error-Code)
@@ -2030,6 +2036,7 @@
 | NameServiceResolveName | [Rpc.NameService.ResolveName.Request](#anytype-Rpc-NameService-ResolveName-Request) | [Rpc.NameService.ResolveName.Response](#anytype-Rpc-NameService-ResolveName-Response) |  |
 | NameServiceResolveAnyId | [Rpc.NameService.ResolveAnyId.Request](#anytype-Rpc-NameService-ResolveAnyId-Request) | [Rpc.NameService.ResolveAnyId.Response](#anytype-Rpc-NameService-ResolveAnyId-Response) | 12D3KooWA8EXV3KjBxEU5EnsPfneLx84vMWAtTBQBeyooN82KSuS -&gt; hello.any |
 | BroadcastPayloadEvent | [Rpc.Broadcast.PayloadEvent.Request](#anytype-Rpc-Broadcast-PayloadEvent-Request) | [Rpc.Broadcast.PayloadEvent.Response](#anytype-Rpc-Broadcast-PayloadEvent-Response) |  |
+| PluginExample | [Rpc.Plugin.Example.Request](#anytype-Rpc-Plugin-Example-Request) | [Rpc.Plugin.Example.Response](#anytype-Rpc-Plugin-Example-Response) |  |
 
  
 
@@ -16155,6 +16162,73 @@ Available undo/redo operations
 
 
 
+<a name="anytype-Rpc-Plugin"></a>
+
+### Rpc.Plugin
+
+
+
+
+
+
+
+<a name="anytype-Rpc-Plugin-Example"></a>
+
+### Rpc.Plugin.Example
+
+
+
+
+
+
+
+<a name="anytype-Rpc-Plugin-Example-Request"></a>
+
+### Rpc.Plugin.Example.Request
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| path | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="anytype-Rpc-Plugin-Example-Response"></a>
+
+### Rpc.Plugin.Example.Response
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| error | [Rpc.Plugin.Example.Response.Error](#anytype-Rpc-Plugin-Example-Response-Error) |  |  |
+| result | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="anytype-Rpc-Plugin-Example-Response-Error"></a>
+
+### Rpc.Plugin.Example.Response.Error
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| code | [Rpc.Plugin.Example.Response.Error.Code](#anytype-Rpc-Plugin-Example-Response-Error-Code) |  |  |
+| description | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="anytype-Rpc-Process"></a>
 
 ### Rpc.Process
@@ -21548,6 +21622,20 @@ Middleware-to-front-end response, that can contain a NULL error or a non-NULL er
 | UNKNOWN_ERROR | 1 |  |
 | BAD_INPUT | 2 |  |
 | READONLY_OBJECT_TYPE | 3 | ... |
+
+
+
+<a name="anytype-Rpc-Plugin-Example-Response-Error-Code"></a>
+
+### Rpc.Plugin.Example.Response.Error.Code
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| NULL | 0 |  |
+| UNKNOWN_ERROR | 1 |  |
+| BAD_INPUT | 2 |  |
+| INTERNAL_ERROR | 3 |  |
 
 
 

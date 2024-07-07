@@ -350,4 +350,5 @@ service ClientCommands {
     rpc NameServiceResolveAnyId( anytype.Rpc.NameService.ResolveAnyId.Request ) returns (anytype.Rpc.NameService.ResolveAnyId.Response);
     
     rpc BroadcastPayloadEvent (anytype.Rpc.Broadcast.PayloadEvent.Request) returns (anytype.Rpc.Broadcast.PayloadEvent.Response);
+    rpc PluginExample (anytype.Rpc.Plugin.Example.Request) returns (anytype.Rpc.Plugin.Example.Response);
 }
