@@ -1307,3 +1307,13 @@ message DeviceInfo {
     bool archived = 4;
     bool isConnected = 5;
 }
+
+enum ExtensionMode {
+    Normal = 0;
+    Developer = 1;
+}
+
+message ExtensionBucket {
+    string name = 1;
+    string endpoint = 2;
+}
