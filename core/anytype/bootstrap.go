@@ -54,6 +54,7 @@ import (
 	"github.com/anyproto/anytype-heart/core/debug"
 	"github.com/anyproto/anytype-heart/core/debug/profiler"
 	"github.com/anyproto/anytype-heart/core/device"
+	"github.com/anyproto/anytype-heart/core/extensions"
 	"github.com/anyproto/anytype-heart/core/files"
 	"github.com/anyproto/anytype-heart/core/files/fileacl"
 	"github.com/anyproto/anytype-heart/core/files/fileobject"
@@ -296,7 +297,8 @@ func Bootstrap(a *app.App, components ...app.Component) {
 		Register(nameserviceclient.New()).
 		Register(payments.New()).
 		Register(paymentscache.New()).
-		Register(peerstatus.New())
+		Register(peerstatus.New()).
+		Register(extensions.New())
 }
 
 func MiddlewareVersion() string {
