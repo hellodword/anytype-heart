@@ -356,4 +356,8 @@ service ClientCommands {
     rpc DeviceSetName (anytype.Rpc.Device.SetName.Request) returns (anytype.Rpc.Device.SetName.Response);
     rpc DeviceList (anytype.Rpc.Device.List.Request) returns (anytype.Rpc.Device.List.Response);
     rpc DeviceNetworkStateSet (anytype.Rpc.Device.NetworkState.Set.Request) returns (anytype.Rpc.Device.NetworkState.Set.Response);
+
+    rpc ExtensionSetEndpoint (anytype.Rpc.Extension.SetEndpoint.Request) returns (anytype.Rpc.Extension.SetEndpoint.Response);
+    rpc ExtensionSetMode (anytype.Rpc.Extension.SetMode.Request) returns (anytype.Rpc.Extension.SetMode.Response);
+    rpc ExtensionInstallByID (anytype.Rpc.Extension.InstallByID.Request) returns (anytype.Rpc.Extension.InstallByID.Response);
 }
