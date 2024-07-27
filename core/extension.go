@@ -2,14 +2,42 @@ package core
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/anyproto/anytype-heart/pb"
 )
 
-func (mw *Middleware) ExtensionSetEndpoint(cctx context.Context, request *pb.RpcExtensionSetEndpointRequest) *pb.RpcExtensionSetEndpointResponse {
-	return &pb.RpcExtensionSetEndpointResponse{
-		Error: &pb.RpcExtensionSetEndpointResponseError{
-			Code: pb.RpcExtensionSetEndpointResponseError_NULL,
+func (mw *Middleware) ExtensionListBuckets(cctx context.Context, request *pb.RpcExtensionListBucketsRequest) *pb.RpcExtensionListBucketsResponse {
+	return &pb.RpcExtensionListBucketsResponse{
+		Error: &pb.RpcExtensionListBucketsResponseError{
+			Code: pb.RpcExtensionListBucketsResponseError_NULL,
+		},
+	}
+}
+
+func (mw *Middleware) ExtensionAddBucket(cctx context.Context, request *pb.RpcExtensionAddBucketRequest) *pb.RpcExtensionAddBucketResponse {
+	var response = &pb.RpcExtensionAddBucketResponse{
+		Error: &pb.RpcExtensionAddBucketResponseError{
+			Code: pb.RpcExtensionAddBucketResponseError_NULL,
+		},
+	}
+
+	// TODO validate inputs with https://github.com/go-playground/validator
+	if request.Bucket.Name == "" || request.Bucket.Endpoint == "" {
+		response.Error.Code = pb.RpcExtensionAddBucketResponseError_BAD_INPUT
+		return response
+	}
+
+	if _, err := url.Parse(request.Bucket.Endpoint); err != nil {
+		response.Error.Code = pb.RpcExtensionAddBucketResponseError_BAD_INPUT
+		return response
+	}
+
+	// TODO fetch bucket info here
+
+	return &pb.RpcExtensionAddBucketResponse{
+		Error: &pb.RpcExtensionAddBucketResponseError{
+			Code: pb.RpcExtensionAddBucketResponseError_NULL,
 		},
 	}
 }

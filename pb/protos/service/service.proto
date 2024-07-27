@@ -357,7 +357,8 @@ service ClientCommands {
     rpc DeviceList (anytype.Rpc.Device.List.Request) returns (anytype.Rpc.Device.List.Response);
     rpc DeviceNetworkStateSet (anytype.Rpc.Device.NetworkState.Set.Request) returns (anytype.Rpc.Device.NetworkState.Set.Response);
 
-    rpc ExtensionSetEndpoint (anytype.Rpc.Extension.SetEndpoint.Request) returns (anytype.Rpc.Extension.SetEndpoint.Response);
+    rpc ExtensionListBuckets (anytype.Rpc.Extension.ListBuckets.Request) returns (anytype.Rpc.Extension.ListBuckets.Response);
+    rpc ExtensionAddBucket (anytype.Rpc.Extension.AddBucket.Request) returns (anytype.Rpc.Extension.AddBucket.Response);
     rpc ExtensionSetMode (anytype.Rpc.Extension.SetMode.Request) returns (anytype.Rpc.Extension.SetMode.Response);
     rpc ExtensionInstallByID (anytype.Rpc.Extension.InstallByID.Request) returns (anytype.Rpc.Extension.InstallByID.Response);
 }
