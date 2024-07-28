@@ -61,23 +61,21 @@ func (mw *Middleware) ExtensionRemoveBucket(cctx context.Context, request *pb.Rp
 	return response(pb.RpcExtensionRemoveBucketResponseError_NULL, nil)
 }
 
-func (mw *Middleware) ExtensionGetStatus(cctx context.Context, request *pb.RpcExtensionGetStatusRequest) *pb.RpcExtensionGetStatusResponse {
-	response := func(code pb.RpcExtensionGetStatusResponseErrorCode, err error, developerMode bool) *pb.RpcExtensionGetStatusResponse {
-		m := &pb.RpcExtensionGetStatusResponse{Error: &pb.RpcExtensionGetStatusResponseError{Code: code}}
+func (mw *Middleware) ExtensionGetDeveloperMode(cctx context.Context, request *pb.RpcExtensionGetDeveloperModeRequest) *pb.RpcExtensionGetDeveloperModeResponse {
+	response := func(code pb.RpcExtensionGetDeveloperModeResponseErrorCode, err error, developerMode bool) *pb.RpcExtensionGetDeveloperModeResponse {
+		m := &pb.RpcExtensionGetDeveloperModeResponse{Error: &pb.RpcExtensionGetDeveloperModeResponseError{Code: code}}
 		if err != nil {
 			m.Error.Description = err.Error()
 		}
-		m.Status = &pb.RpcExtensionGetStatusResponseStatus{
-			DeveloperMode: developerMode,
-		}
+		m.DeveloperMode = developerMode
 		return m
 	}
 
-	mode, err := getService[extensions.Service](mw).GetStatus(cctx)
+	mode, err := getService[extensions.Service](mw).GetDeveloperMode(cctx)
 	if err != nil {
-		return response(pb.RpcExtensionGetStatusResponseError_UNKNOWN_ERROR, err, mode)
+		return response(pb.RpcExtensionGetDeveloperModeResponseError_UNKNOWN_ERROR, err, mode)
 	}
-	return response(pb.RpcExtensionGetStatusResponseError_NULL, nil, mode)
+	return response(pb.RpcExtensionGetDeveloperModeResponseError_NULL, nil, mode)
 }
 
 func (mw *Middleware) ExtensionSetDeveloperMode(cctx context.Context, request *pb.RpcExtensionSetDeveloperModeRequest) *pb.RpcExtensionSetDeveloperModeResponse {

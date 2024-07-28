@@ -7266,12 +7266,12 @@ message Rpc {
                 }
             }
         }
-        message GetStatus {
+        message GetDeveloperMode {
             message Request {
             }
             message Response {
                 Error error = 1;
-                Status status = 2;
+                bool developer_mode = 2;
 
                 message Error {
                     Code code = 1;
@@ -7283,10 +7283,6 @@ message Rpc {
                         BAD_INPUT = 2;
                         INTERNAL_ERROR = 3;
                     }
-                }
-
-                message Status {
-                    bool developer_mode = 1;
                 }
             }
         }

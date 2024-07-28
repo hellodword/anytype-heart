@@ -360,7 +360,7 @@ service ClientCommands {
     rpc ExtensionListBuckets (anytype.Rpc.Extension.ListBuckets.Request) returns (anytype.Rpc.Extension.ListBuckets.Response);
     rpc ExtensionAddBucket (anytype.Rpc.Extension.AddBucket.Request) returns (anytype.Rpc.Extension.AddBucket.Response);
     rpc ExtensionRemoveBucket (anytype.Rpc.Extension.RemoveBucket.Request) returns (anytype.Rpc.Extension.RemoveBucket.Response);
-    rpc ExtensionGetStatus (anytype.Rpc.Extension.GetStatus.Request) returns (anytype.Rpc.Extension.GetStatus.Response);
+    rpc ExtensionGetDeveloperMode (anytype.Rpc.Extension.GetDeveloperMode.Request) returns (anytype.Rpc.Extension.GetDeveloperMode.Response);
     rpc ExtensionSetDeveloperMode (anytype.Rpc.Extension.SetDeveloperMode.Request) returns (anytype.Rpc.Extension.SetDeveloperMode.Response);
     rpc ExtensionGetByID (anytype.Rpc.Extension.GetByID.Request) returns (anytype.Rpc.Extension.GetByID.Response);
     rpc ExtensionInstallByURL (anytype.Rpc.Extension.InstallByURL.Request) returns (anytype.Rpc.Extension.InstallByURL.Response);

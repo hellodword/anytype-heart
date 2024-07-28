@@ -21,7 +21,7 @@ type Service interface {
 	ListBuckets(ctx context.Context) ([]*model.ExtensionBucketInfo, error)
 	AddBucket(ctx context.Context, bucket *model.ExtensionBucket) (*model.ExtensionBucketInfo, error)
 	RemoveBucket(ctx context.Context, bucketId string) error
-	GetStatus(ctx context.Context) (bool, error)
+	GetDeveloperMode(ctx context.Context) (bool, error)
 	SetDeveloperMode(ctx context.Context, developerMode bool) (bool, error)
 	GetByID(ctx context.Context, bucketId, extensionId string) *pb.RpcExtensionGetByIDResponse
 	InstallByURL(ctx context.Context, u string) *pb.RpcExtensionInstallByURLResponse
@@ -88,7 +88,7 @@ func (s *service) RemoveBucket(ctx context.Context, bucketId string) error {
 	return nil
 }
 
-func (s *service) GetStatus(ctx context.Context) (bool, error) {
+func (s *service) GetDeveloperMode(ctx context.Context) (bool, error) {
 	return s.developerMode, nil
 }
 
