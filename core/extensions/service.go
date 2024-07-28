@@ -14,9 +14,11 @@ const CName = "extensions"
 type Service interface {
 	app.Component
 	ListBuckets(ctx context.Context) *pb.RpcExtensionListBucketsResponse
-	AddBucket(ctx context.Context, bucket model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse
+	AddBucket(ctx context.Context, bucket *model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse
+	RemoveBucket(ctx context.Context, bucketId string) *pb.RpcExtensionRemoveBucketResponse
 	SetMode(ctx context.Context, mode model.ExtensionMode) *pb.RpcExtensionSetModeResponse
-	InstallByID(ctx context.Context, id string) *pb.RpcExtensionInstallByIDResponse
+	GetByID(ctx context.Context, bucketId, extensionId string) *pb.RpcExtensionGetByIDResponse
+	InstallByURL(ctx context.Context, u string) *pb.RpcExtensionInstallByURLResponse
 }
 
 func New() Service {
@@ -26,7 +28,7 @@ func New() Service {
 type service struct {
 	lock sync.RWMutex
 
-	buckets []*model.ExtensionBucket
+	buckets map[string]*model.ExtensionBucketInfo
 	mode    model.ExtensionMode
 }
 
@@ -36,25 +38,52 @@ func (s *service) Name() string {
 
 func (s *service) Init(a *app.App) error {
 	// avoid null while json marsharl
-	s.buckets = make([]*model.ExtensionBucket, 0)
+	s.buckets = make(map[string]*model.ExtensionBucketInfo)
 	return nil
 }
 
 func (s *service) ListBuckets(ctx context.Context) *pb.RpcExtensionListBucketsResponse {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	return &pb.RpcExtensionListBucketsResponse{Buckets: s.buckets}
+	var buckets []*model.ExtensionBucketInfo
+	for _, v := range s.buckets {
+		buckets = append(buckets, v)
+	}
+	return &pb.RpcExtensionListBucketsResponse{Buckets: buckets}
 }
 
-func (s *service) AddBucket(ctx context.Context, bucket model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse {
+func (s *service) AddBucket(ctx context.Context, bucket *model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse {
 	if bucket.Name == "" || bucket.Endpoint == "" {
-
+		return &pb.RpcExtensionAddBucketResponse{
+			Error: &pb.RpcExtensionAddBucketResponseError{Code: pb.RpcExtensionAddBucketResponseError_BAD_INPUT},
+		}
 	}
+	var info = &model.ExtensionBucketInfo{
+		Name:     bucket.GetName(),
+		Endpoint: bucket.GetEndpoint(),
+	}
+
 	// TODO fetch bucket info
+	// info.Id = ""
+
+	if info.GetId() == "" {
+		return &pb.RpcExtensionAddBucketResponse{
+			Error: &pb.RpcExtensionAddBucketResponseError{Code: pb.RpcExtensionAddBucketResponseError_INTERNAL_ERROR},
+		}
+	}
+
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	s.buckets = append(s.buckets, &bucket)
-	return nil
+	s.buckets[info.GetId()] = info
+
+	return &pb.RpcExtensionAddBucketResponse{Bucket: info}
+}
+
+func (s *service) RemoveBucket(ctx context.Context, bucketId string) *pb.RpcExtensionRemoveBucketResponse {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	delete(s.buckets, bucketId)
+	return &pb.RpcExtensionRemoveBucketResponse{}
 }
 
 func (s *service) SetMode(ctx context.Context, mode model.ExtensionMode) *pb.RpcExtensionSetModeResponse {
@@ -64,6 +93,19 @@ func (s *service) SetMode(ctx context.Context, mode model.ExtensionMode) *pb.Rpc
 	return &pb.RpcExtensionSetModeResponse{Mode: s.mode}
 }
 
-func (s *service) InstallByID(ctx context.Context, id string) *pb.RpcExtensionInstallByIDResponse {
-	return &pb.RpcExtensionInstallByIDResponse{}
+func (s *service) GetByID(ctx context.Context, bucketId, extensionId string) *pb.RpcExtensionGetByIDResponse {
+	return &pb.RpcExtensionGetByIDResponse{}
+}
+
+func (s *service) InstallByURL(ctx context.Context, u string) *pb.RpcExtensionInstallByURLResponse {
+	switch s.mode {
+	case model.ExtensionMode_Developer:
+		break
+	default:
+		return &pb.RpcExtensionInstallByURLResponse{
+			Error: &pb.RpcExtensionInstallByURLResponseError{Code: pb.RpcExtensionInstallByURLResponseError_INTERNAL_ERROR},
+		}
+	}
+
+	return &pb.RpcExtensionInstallByURLResponse{}
 }
