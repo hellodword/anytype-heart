@@ -2,6 +2,7 @@ package extensions
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/anyproto/any-sync/app"
@@ -17,10 +18,11 @@ var log = logging.Logger(CName)
 
 type Service interface {
 	app.Component
-	ListBuckets(ctx context.Context) *pb.RpcExtensionListBucketsResponse
-	AddBucket(ctx context.Context, bucket *model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse
-	RemoveBucket(ctx context.Context, bucketId string) *pb.RpcExtensionRemoveBucketResponse
-	SetMode(ctx context.Context, mode model.ExtensionMode) *pb.RpcExtensionSetModeResponse
+	ListBuckets(ctx context.Context) ([]*model.ExtensionBucketInfo, error)
+	AddBucket(ctx context.Context, bucket *model.ExtensionBucket) (*model.ExtensionBucketInfo, error)
+	RemoveBucket(ctx context.Context, bucketId string) error
+	GetStatus(ctx context.Context) (bool, error)
+	SetDeveloperMode(ctx context.Context, developerMode bool) (bool, error)
 	GetByID(ctx context.Context, bucketId, extensionId string) *pb.RpcExtensionGetByIDResponse
 	InstallByURL(ctx context.Context, u string) *pb.RpcExtensionInstallByURLResponse
 }
@@ -32,8 +34,8 @@ func New() Service {
 type service struct {
 	lock sync.RWMutex
 
-	buckets map[string]*model.ExtensionBucketInfo
-	mode    model.ExtensionMode
+	buckets       map[string]*model.ExtensionBucketInfo
+	developerMode bool
 }
 
 func (s *service) Name() string {
@@ -46,21 +48,19 @@ func (s *service) Init(a *app.App) error {
 	return nil
 }
 
-func (s *service) ListBuckets(ctx context.Context) *pb.RpcExtensionListBucketsResponse {
+func (s *service) ListBuckets(ctx context.Context) ([]*model.ExtensionBucketInfo, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var buckets []*model.ExtensionBucketInfo
 	for _, v := range s.buckets {
 		buckets = append(buckets, v)
 	}
-	return &pb.RpcExtensionListBucketsResponse{Buckets: buckets}
+	return buckets, nil
 }
 
-func (s *service) AddBucket(ctx context.Context, bucket *model.ExtensionBucket) *pb.RpcExtensionAddBucketResponse {
+func (s *service) AddBucket(ctx context.Context, bucket *model.ExtensionBucket) (*model.ExtensionBucketInfo, error) {
 	if bucket.Name == "" || bucket.Endpoint == "" {
-		return &pb.RpcExtensionAddBucketResponse{
-			Error: &pb.RpcExtensionAddBucketResponseError{Code: pb.RpcExtensionAddBucketResponseError_BAD_INPUT},
-		}
+		return nil, errors.New("invalid input")
 	}
 	var info = &model.ExtensionBucketInfo{
 		Name:     bucket.GetName(),
@@ -71,31 +71,33 @@ func (s *service) AddBucket(ctx context.Context, bucket *model.ExtensionBucket) 
 	// info.Id = ""
 
 	if info.GetId() == "" {
-		return &pb.RpcExtensionAddBucketResponse{
-			Error: &pb.RpcExtensionAddBucketResponseError{Code: pb.RpcExtensionAddBucketResponseError_INTERNAL_ERROR},
-		}
+		return nil, errors.New("invalid id")
 	}
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.buckets[info.GetId()] = info
 
-	return &pb.RpcExtensionAddBucketResponse{Bucket: info}
+	return info, nil
 }
 
-func (s *service) RemoveBucket(ctx context.Context, bucketId string) *pb.RpcExtensionRemoveBucketResponse {
+func (s *service) RemoveBucket(ctx context.Context, bucketId string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.buckets, bucketId)
-	return &pb.RpcExtensionRemoveBucketResponse{}
+	return nil
 }
 
-func (s *service) SetMode(ctx context.Context, mode model.ExtensionMode) *pb.RpcExtensionSetModeResponse {
-	log.Info("SetMode", zap.Int32("mode", int32(mode)))
+func (s *service) GetStatus(ctx context.Context) (bool, error) {
+	return s.developerMode, nil
+}
+
+func (s *service) SetDeveloperMode(ctx context.Context, developerMode bool) (bool, error) {
+	log.Info("SetDeveloperMode", developerMode)
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	s.mode = mode
-	return &pb.RpcExtensionSetModeResponse{Mode: s.mode}
+	s.developerMode = developerMode
+	return s.developerMode, nil
 }
 
 func (s *service) GetByID(ctx context.Context, bucketId, extensionId string) *pb.RpcExtensionGetByIDResponse {
@@ -103,14 +105,17 @@ func (s *service) GetByID(ctx context.Context, bucketId, extensionId string) *pb
 }
 
 func (s *service) InstallByURL(ctx context.Context, u string) *pb.RpcExtensionInstallByURLResponse {
-	switch s.mode {
-	case model.ExtensionMode_Developer:
-		break
-	default:
+	log.Info("InstallByURL", zap.String("url", u))
+
+	if !s.developerMode {
 		return &pb.RpcExtensionInstallByURLResponse{
 			Error: &pb.RpcExtensionInstallByURLResponseError{Code: pb.RpcExtensionInstallByURLResponseError_INTERNAL_ERROR},
 		}
 	}
 
-	return &pb.RpcExtensionInstallByURLResponse{}
+	return &pb.RpcExtensionInstallByURLResponse{
+		Error: &pb.RpcExtensionInstallByURLResponseError{
+			Code: pb.RpcExtensionInstallByURLResponseError_NULL,
+		},
+	}
 }

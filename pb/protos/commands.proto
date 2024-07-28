@@ -7266,13 +7266,37 @@ message Rpc {
                 }
             }
         }
-        message SetMode {
+        message GetStatus {
             message Request {
-                anytype.model.ExtensionMode mode = 1;
             }
             message Response {
                 Error error = 1;
-                anytype.model.ExtensionMode mode = 2;
+                Status status = 2;
+
+                message Error {
+                    Code code = 1;
+                    string description = 2;
+
+                    enum Code {
+                        NULL = 0;
+                        UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
+                    }
+                }
+
+                message Status {
+                    bool developer_mode = 1;
+                }
+            }
+        }
+        message SetDeveloperMode {
+            message Request {
+                bool developer_mode = 1;
+            }
+            message Response {
+                Error error = 1;
+                bool developer_mode = 2;
 
                 message Error {
                     Code code = 1;

@@ -5,26 +5,96 @@ import (
 
 	"github.com/anyproto/anytype-heart/core/extensions"
 	"github.com/anyproto/anytype-heart/pb"
+	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 )
 
 func (mw *Middleware) ExtensionListBuckets(cctx context.Context, request *pb.RpcExtensionListBucketsRequest) *pb.RpcExtensionListBucketsResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.ListBuckets(cctx)
+	response := func(code pb.RpcExtensionListBucketsResponseErrorCode, err error, buckets []*model.ExtensionBucketInfo) *pb.RpcExtensionListBucketsResponse {
+		m := &pb.RpcExtensionListBucketsResponse{Error: &pb.RpcExtensionListBucketsResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.Buckets = buckets
+		return m
+	}
+
+	buckets, err := getService[extensions.Service](mw).ListBuckets(cctx)
+	if err != nil {
+		return response(pb.RpcExtensionListBucketsResponseError_UNKNOWN_ERROR, err, nil)
+	}
+	return response(pb.RpcExtensionListBucketsResponseError_NULL, nil, buckets)
 }
 
 func (mw *Middleware) ExtensionAddBucket(cctx context.Context, request *pb.RpcExtensionAddBucketRequest) *pb.RpcExtensionAddBucketResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.AddBucket(cctx, request.GetBucket())
+	response := func(code pb.RpcExtensionAddBucketResponseErrorCode, err error, bucket *model.ExtensionBucketInfo) *pb.RpcExtensionAddBucketResponse {
+		m := &pb.RpcExtensionAddBucketResponse{Error: &pb.RpcExtensionAddBucketResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.Bucket = bucket
+		return m
+	}
+
+	bucket, err := getService[extensions.Service](mw).AddBucket(cctx, request.GetBucket())
+	if err != nil {
+		return response(pb.RpcExtensionAddBucketResponseError_UNKNOWN_ERROR, err, nil)
+	}
+	return response(pb.RpcExtensionAddBucketResponseError_NULL, nil, bucket)
 }
 
 func (mw *Middleware) ExtensionRemoveBucket(cctx context.Context, request *pb.RpcExtensionRemoveBucketRequest) *pb.RpcExtensionRemoveBucketResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.RemoveBucket(cctx, request.GetBucketId())
+	// ext := getService[extensions.Service](mw)
+	// return ext.RemoveBucket(cctx, request.GetBucketId())
+
+	response := func(code pb.RpcExtensionRemoveBucketResponseErrorCode, err error) *pb.RpcExtensionRemoveBucketResponse {
+		m := &pb.RpcExtensionRemoveBucketResponse{Error: &pb.RpcExtensionRemoveBucketResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		return m
+	}
+
+	err := getService[extensions.Service](mw).RemoveBucket(cctx, request.GetBucketId())
+	if err != nil {
+		return response(pb.RpcExtensionRemoveBucketResponseError_UNKNOWN_ERROR, err)
+	}
+	return response(pb.RpcExtensionRemoveBucketResponseError_NULL, nil)
 }
 
-func (mw *Middleware) ExtensionSetMode(cctx context.Context, request *pb.RpcExtensionSetModeRequest) *pb.RpcExtensionSetModeResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.SetMode(cctx, request.GetMode())
+func (mw *Middleware) ExtensionGetStatus(cctx context.Context, request *pb.RpcExtensionGetStatusRequest) *pb.RpcExtensionGetStatusResponse {
+	response := func(code pb.RpcExtensionGetStatusResponseErrorCode, err error, developerMode bool) *pb.RpcExtensionGetStatusResponse {
+		m := &pb.RpcExtensionGetStatusResponse{Error: &pb.RpcExtensionGetStatusResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.Status = &pb.RpcExtensionGetStatusResponseStatus{
+			DeveloperMode: developerMode,
+		}
+		return m
+	}
+
+	mode, err := getService[extensions.Service](mw).GetStatus(cctx)
+	if err != nil {
+		return response(pb.RpcExtensionGetStatusResponseError_UNKNOWN_ERROR, err, mode)
+	}
+	return response(pb.RpcExtensionGetStatusResponseError_NULL, nil, mode)
+}
+
+func (mw *Middleware) ExtensionSetDeveloperMode(cctx context.Context, request *pb.RpcExtensionSetDeveloperModeRequest) *pb.RpcExtensionSetDeveloperModeResponse {
+	response := func(code pb.RpcExtensionSetDeveloperModeResponseErrorCode, err error, developerMode bool) *pb.RpcExtensionSetDeveloperModeResponse {
+		m := &pb.RpcExtensionSetDeveloperModeResponse{Error: &pb.RpcExtensionSetDeveloperModeResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.DeveloperMode = developerMode
+		return m
+	}
+
+	mode, err := getService[extensions.Service](mw).SetDeveloperMode(cctx, request.GetDeveloperMode())
+	if err != nil {
+		return response(pb.RpcExtensionSetDeveloperModeResponseError_UNKNOWN_ERROR, err, mode)
+	}
+	return response(pb.RpcExtensionSetDeveloperModeResponseError_NULL, nil, mode)
 }
 
 func (mw *Middleware) ExtensionGetByID(cctx context.Context, request *pb.RpcExtensionGetByIDRequest) *pb.RpcExtensionGetByIDResponse {
