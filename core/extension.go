@@ -96,11 +96,34 @@ func (mw *Middleware) ExtensionSetDeveloperMode(cctx context.Context, request *p
 }
 
 func (mw *Middleware) ExtensionGetByID(cctx context.Context, request *pb.RpcExtensionGetByIDRequest) *pb.RpcExtensionGetByIDResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.GetByID(cctx, request.GetBucketId(), request.GetExtensionId())
+	response := func(code pb.RpcExtensionGetByIDResponseErrorCode, err error, info *model.ExtensionBucketExtensionInfo) *pb.RpcExtensionGetByIDResponse {
+		m := &pb.RpcExtensionGetByIDResponse{Error: &pb.RpcExtensionGetByIDResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.Info = info
+		return m
+	}
+
+	info, err := getService[extensions.Service](mw).GetByID(cctx, request.GetBucketId(), request.GetExtensionId())
+	if err != nil {
+		return response(pb.RpcExtensionGetByIDResponseError_UNKNOWN_ERROR, err, info)
+	}
+	return response(pb.RpcExtensionGetByIDResponseError_NULL, nil, info)
 }
 
 func (mw *Middleware) ExtensionInstallByURL(cctx context.Context, request *pb.RpcExtensionInstallByURLRequest) *pb.RpcExtensionInstallByURLResponse {
-	ext := getService[extensions.Service](mw)
-	return ext.InstallByURL(cctx, request.GetUrl())
+	response := func(code pb.RpcExtensionInstallByURLResponseErrorCode, err error) *pb.RpcExtensionInstallByURLResponse {
+		m := &pb.RpcExtensionInstallByURLResponse{Error: &pb.RpcExtensionInstallByURLResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		return m
+	}
+
+	err := getService[extensions.Service](mw).InstallByURL(cctx, request.GetUrl())
+	if err != nil {
+		return response(pb.RpcExtensionInstallByURLResponseError_UNKNOWN_ERROR, err)
+	}
+	return response(pb.RpcExtensionInstallByURLResponseError_NULL, nil)
 }
