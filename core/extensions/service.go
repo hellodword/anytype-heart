@@ -6,10 +6,14 @@ import (
 
 	"github.com/anyproto/any-sync/app"
 	"github.com/anyproto/anytype-heart/pb"
+	"github.com/anyproto/anytype-heart/pkg/lib/logging"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
+	"go.uber.org/zap"
 )
 
 const CName = "extensions"
+
+var log = logging.Logger(CName)
 
 type Service interface {
 	app.Component
@@ -87,6 +91,7 @@ func (s *service) RemoveBucket(ctx context.Context, bucketId string) *pb.RpcExte
 }
 
 func (s *service) SetMode(ctx context.Context, mode model.ExtensionMode) *pb.RpcExtensionSetModeResponse {
+	log.Info("SetMode", zap.Int32("mode", int32(mode)))
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.mode = mode
