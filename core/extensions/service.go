@@ -32,7 +32,8 @@ type Service interface {
 	GetDeveloperMode(ctx context.Context) (bool, error)
 	SetDeveloperMode(ctx context.Context, developerMode bool) (bool, error)
 	GetByID(ctx context.Context, bucketId, extensionId string) (*model.ExtensionBucketExtensionInfo, error)
-	InstallByURL(ctx context.Context, u string) error
+	InstallByURL(ctx context.Context, u string) (*model.ExtensionManifest, error)
+	Call(ctx context.Context, extensionId, functionName, blockId string) error
 }
 
 func New() Service {
@@ -125,22 +126,22 @@ func (s *service) GetByID(ctx context.Context, bucketId, extensionId string) (*m
 	panic("TODO")
 }
 
-func (s *service) InstallByURL(ctx context.Context, u string) error {
+func (s *service) InstallByURL(ctx context.Context, u string) (*model.ExtensionManifest, error) {
 	log.Info("InstallByURL", zap.String("url", u))
 
 	if !s.developerMode {
-		return errors.New("not in developer mode")
+		return nil, errors.New("not in developer mode")
 	}
 
 	filename, err := downloadFile(ctx, u, s.downloadRootPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	extracted := filepath.Join(s.extractRootPath, strings.TrimSuffix(filename, ".ext"))
 	err = Unzip(filepath.Join(s.downloadRootPath, filename), extracted)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// manifest := extism.Manifest{
@@ -166,6 +167,10 @@ func (s *service) InstallByURL(ctx context.Context, u string) error {
 	// s.plugins[u] = plugin
 	// s.plugins["id1"] = plugin
 
+	return &model.ExtensionManifest{}, nil
+}
+
+func (s *service) Call(ctx context.Context, extensionId, functionName, blockId string) error {
 	return nil
 }
 

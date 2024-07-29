@@ -364,4 +364,5 @@ service ClientCommands {
     rpc ExtensionSetDeveloperMode (anytype.Rpc.Extension.SetDeveloperMode.Request) returns (anytype.Rpc.Extension.SetDeveloperMode.Response);
     rpc ExtensionGetByID (anytype.Rpc.Extension.GetByID.Request) returns (anytype.Rpc.Extension.GetByID.Response);
     rpc ExtensionInstallByURL (anytype.Rpc.Extension.InstallByURL.Request) returns (anytype.Rpc.Extension.InstallByURL.Response);
+    rpc ExtensionCall (anytype.Rpc.Extension.Call.Request) returns (anytype.Rpc.Extension.Call.Response);
 }

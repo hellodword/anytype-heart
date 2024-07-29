@@ -1329,3 +1329,50 @@ message ExtensionBucketExtensionInfo {
     string url = 5;
     string image = 6;
 }
+
+enum ExtensionManifestVersionType {
+    TYPE_UNKNOWN = 0;
+    TYPE_1 = 1;
+}
+
+message ExtensionManifestExtism {
+
+}
+
+message ExtensionManifestIcons {
+    string icon16 = 1;
+    string icon48 = 2;
+    string icon128 = 3;
+    string icon256 = 4;
+}
+
+enum ExtensionManifestScopeType {
+    SCOPE_UNKNOWN = 0;
+    SCOPE_SPACE = 1;
+    SCOPE_SET = 2;
+    SCOPE_PAGE = 3;
+    SCOPE_OBJECT = 4;
+}
+
+enum ExtensionManifestPlatformType {
+    PLATFORM_UNKNOWN = 0;
+    PLATFORM_IOS = 1;
+    PLATFORM_ANDROID = 2;
+    PLATFORM_LINUX = 3;
+    PLATFORM_WINDOWS = 4;
+    PLATFORM_DARWIN = 5;
+}
+
+message ExtensionManifest {
+    ExtensionManifestExtism extism = 1;
+    ExtensionManifestVersionType manifest_version = 2;
+    string name = 3;
+    string version = 4;
+    string description = 5;
+    ExtensionManifestIcons icons = 6;
+    string homepage_url = 7;
+    string minimum_heart_version = 8;
+    repeated ExtensionManifestScopeType scopes = 9;
+    repeated ExtensionManifestPlatformType platforms = 10;
+    repeated string commands = 11;
+}

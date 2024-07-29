@@ -113,17 +113,34 @@ func (mw *Middleware) ExtensionGetByID(cctx context.Context, request *pb.RpcExte
 }
 
 func (mw *Middleware) ExtensionInstallByURL(cctx context.Context, request *pb.RpcExtensionInstallByURLRequest) *pb.RpcExtensionInstallByURLResponse {
-	response := func(code pb.RpcExtensionInstallByURLResponseErrorCode, err error) *pb.RpcExtensionInstallByURLResponse {
+	response := func(code pb.RpcExtensionInstallByURLResponseErrorCode, err error, manifest *model.ExtensionManifest) *pb.RpcExtensionInstallByURLResponse {
 		m := &pb.RpcExtensionInstallByURLResponse{Error: &pb.RpcExtensionInstallByURLResponseError{Code: code}}
+		if err != nil {
+			m.Error.Description = err.Error()
+		}
+		m.Manifest = manifest
+		return m
+	}
+
+	manifest, err := getService[extensions.Service](mw).InstallByURL(cctx, request.GetUrl())
+	if err != nil {
+		return response(pb.RpcExtensionInstallByURLResponseError_UNKNOWN_ERROR, err, nil)
+	}
+	return response(pb.RpcExtensionInstallByURLResponseError_NULL, nil, manifest)
+}
+
+func (mw *Middleware) ExtensionCall(cctx context.Context, request *pb.RpcExtensionCallRequest) *pb.RpcExtensionCallResponse {
+	response := func(code pb.RpcExtensionCallResponseErrorCode, err error) *pb.RpcExtensionCallResponse {
+		m := &pb.RpcExtensionCallResponse{Error: &pb.RpcExtensionCallResponseError{Code: code}}
 		if err != nil {
 			m.Error.Description = err.Error()
 		}
 		return m
 	}
 
-	err := getService[extensions.Service](mw).InstallByURL(cctx, request.GetUrl())
+	err := getService[extensions.Service](mw).Call(cctx, request.GetExtensionId(), request.GetFunctionName(), request.GetBlockId())
 	if err != nil {
-		return response(pb.RpcExtensionInstallByURLResponseError_UNKNOWN_ERROR, err)
+		return response(pb.RpcExtensionCallResponseError_UNKNOWN_ERROR, err)
 	}
-	return response(pb.RpcExtensionInstallByURLResponseError_NULL, nil)
+	return response(pb.RpcExtensionCallResponseError_NULL, nil)
 }

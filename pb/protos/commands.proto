@@ -7219,6 +7219,8 @@ message Rpc {
                     enum Code {
                         NULL = 0;
                         UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
                     }
                 }
             }
@@ -7278,6 +7280,8 @@ message Rpc {
                     enum Code {
                         NULL = 0;
                         UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
                     }
                 }
             }
@@ -7328,6 +7332,29 @@ message Rpc {
         message InstallByURL {
             message Request {
                 string url = 1;
+            }
+            message Response {
+                Error error = 1;
+                anytype.model.ExtensionManifest manifest = 2;
+
+                message Error {
+                    Code code = 1;
+                    string description = 2;
+
+                    enum Code {
+                        NULL = 0;
+                        UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
+                    }
+                }
+            }
+        }
+        message Call {
+            message Request {
+                string extension_id = 1;
+                string function_name = 2;
+                string block_id = 3;
             }
             message Response {
                 Error error = 1;
