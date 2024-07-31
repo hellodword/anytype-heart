@@ -7205,67 +7205,6 @@ message Rpc {
     }
 
     message Extension {
-        message ListBuckets {
-            message Request {
-            }
-            message Response {
-                Error error = 1;
-                repeated anytype.model.ExtensionBucketInfo buckets = 2;
-
-                message Error {
-                    Code code = 1;
-                    string description = 2;
-
-                    enum Code {
-                        NULL = 0;
-                        UNKNOWN_ERROR = 1;
-                        BAD_INPUT = 2;
-                        INTERNAL_ERROR = 3;
-                    }
-                }
-            }
-        }
-        message AddBucket {
-            message Request {
-                anytype.model.ExtensionBucket bucket = 1;
-            }
-            message Response {
-                Error error = 1;
-                anytype.model.ExtensionBucketInfo bucket = 2;
-
-                message Error {
-                    Code code = 1;
-                    string description = 2;
-
-                    enum Code {
-                        NULL = 0;
-                        UNKNOWN_ERROR = 1;
-                        BAD_INPUT = 2;
-                        INTERNAL_ERROR = 3;
-                    }
-                }
-            }
-        }
-        message RemoveBucket {
-            message Request {
-                string bucket_id = 1;
-            }
-            message Response {
-                Error error = 1;
-
-                message Error {
-                    Code code = 1;
-                    string description = 2;
-
-                    enum Code {
-                        NULL = 0;
-                        UNKNOWN_ERROR = 1;
-                        BAD_INPUT = 2;
-                        INTERNAL_ERROR = 3;
-                    }
-                }
-            }
-        }
         message GetDeveloperMode {
             message Request {
             }
@@ -7292,7 +7231,6 @@ message Rpc {
             }
             message Response {
                 Error error = 1;
-                bool developer_mode = 2;
 
                 message Error {
                     Code code = 1;
@@ -7307,14 +7245,12 @@ message Rpc {
                 }
             }
         }
-        message GetByID {
+        message ListInstalled {
             message Request {
-                string bucket_id = 1;
-                string extension_id = 2;
             }
             message Response {
                 Error error = 1;
-                anytype.model.ExtensionBucketExtensionInfo info = 2;
+                repeated anytype.model.ExtensionInfo extensions = 2;
 
                 message Error {
                     Code code = 1;
@@ -7329,13 +7265,74 @@ message Rpc {
                 }
             }
         }
-        message InstallByURL {
+        message InstallFromURL {
             message Request {
                 string url = 1;
             }
             message Response {
                 Error error = 1;
-                anytype.model.ExtensionManifest manifest = 2;
+                anytype.model.ExtensionInfo info = 2;
+
+                message Error {
+                    Code code = 1;
+                    string description = 2;
+
+                    enum Code {
+                        NULL = 0;
+                        UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
+                    }
+                }
+            }
+        }
+        message InstallFromZip {
+            message Request {
+                string zip = 1;
+            }
+            message Response {
+                Error error = 1;
+                anytype.model.ExtensionInfo info = 2;
+
+                message Error {
+                    Code code = 1;
+                    string description = 2;
+
+                    enum Code {
+                        NULL = 0;
+                        UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
+                    }
+                }
+            }
+        }
+        message Enable {
+            message Request {
+                string extension_id = 1;
+            }
+            message Response {
+                Error error = 1;
+
+                message Error {
+                    Code code = 1;
+                    string description = 2;
+
+                    enum Code {
+                        NULL = 0;
+                        UNKNOWN_ERROR = 1;
+                        BAD_INPUT = 2;
+                        INTERNAL_ERROR = 3;
+                    }
+                }
+            }
+        }
+        message Disable {
+            message Request {
+                string extension_id = 1;
+            }
+            message Response {
+                Error error = 1;
 
                 message Error {
                     Code code = 1;

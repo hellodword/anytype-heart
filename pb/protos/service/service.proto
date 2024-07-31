@@ -357,12 +357,11 @@ service ClientCommands {
     rpc DeviceList (anytype.Rpc.Device.List.Request) returns (anytype.Rpc.Device.List.Response);
     rpc DeviceNetworkStateSet (anytype.Rpc.Device.NetworkState.Set.Request) returns (anytype.Rpc.Device.NetworkState.Set.Response);
 
-    rpc ExtensionListBuckets (anytype.Rpc.Extension.ListBuckets.Request) returns (anytype.Rpc.Extension.ListBuckets.Response);
-    rpc ExtensionAddBucket (anytype.Rpc.Extension.AddBucket.Request) returns (anytype.Rpc.Extension.AddBucket.Response);
-    rpc ExtensionRemoveBucket (anytype.Rpc.Extension.RemoveBucket.Request) returns (anytype.Rpc.Extension.RemoveBucket.Response);
     rpc ExtensionGetDeveloperMode (anytype.Rpc.Extension.GetDeveloperMode.Request) returns (anytype.Rpc.Extension.GetDeveloperMode.Response);
     rpc ExtensionSetDeveloperMode (anytype.Rpc.Extension.SetDeveloperMode.Request) returns (anytype.Rpc.Extension.SetDeveloperMode.Response);
-    rpc ExtensionGetByID (anytype.Rpc.Extension.GetByID.Request) returns (anytype.Rpc.Extension.GetByID.Response);
-    rpc ExtensionInstallByURL (anytype.Rpc.Extension.InstallByURL.Request) returns (anytype.Rpc.Extension.InstallByURL.Response);
+    rpc ExtensionListInstalled (anytype.Rpc.Extension.ListInstalled.Request) returns (anytype.Rpc.Extension.ListInstalled.Response);
+    rpc ExtensionInstallFromURL (anytype.Rpc.Extension.InstallFromURL.Request) returns (anytype.Rpc.Extension.InstallFromURL.Response);
+    rpc ExtensionEnable (anytype.Rpc.Extension.Enable.Request) returns (anytype.Rpc.Extension.Enable.Response);
+    rpc ExtensionDisable (anytype.Rpc.Extension.Disable.Request) returns (anytype.Rpc.Extension.Disable.Response);
     rpc ExtensionCall (anytype.Rpc.Extension.Call.Request) returns (anytype.Rpc.Extension.Call.Response);
 }

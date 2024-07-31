@@ -1308,28 +1308,6 @@ message DeviceInfo {
     bool isConnected = 5;
 }
 
-message ExtensionBucket {
-    string name = 1;
-    string endpoint = 2;
-}
-
-message ExtensionBucketInfo {
-    string id = 1;
-    string name = 2;
-    string endpoint = 3;
-    string maintainer = 4;
-    string image = 5;
-}
-
-message ExtensionBucketExtensionInfo {
-    string bucket_id = 1;
-    string extension_id = 2;
-    string name = 3;
-    string maintainer = 4;
-    string url = 5;
-    string image = 6;
-}
-
 enum ExtensionManifestVersionType {
     TYPE_UNKNOWN = 0;
     TYPE_1 = 1;
@@ -1375,4 +1353,16 @@ message ExtensionManifest {
     repeated ExtensionManifestScopeType scopes = 9;
     repeated ExtensionManifestPlatformType platforms = 10;
     repeated string commands = 11;
+}
+
+message ExtensionFunction {
+    string function_id = 1;
+    string function_name = 2;
+}
+
+message ExtensionInfo {
+    string extension_id = 1;
+    bool enabled = 2;
+    ExtensionManifest manifest = 3;
+    repeated ExtensionFunction functions = 4;
 }
