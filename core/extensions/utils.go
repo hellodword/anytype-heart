@@ -8,24 +8,43 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/google/uuid"
 )
 
-func downloadFile(ctx context.Context, u, dir string) (filename string, err error) {
+func isValidUUID(u string) bool {
+	if len(u) != 36 {
+		return false
+	}
+	_, err := uuid.Parse(u)
+	return err == nil
+}
+
+func readSingleFromZip(zipPath string, cb func(*zip.File) error) error {
+	r, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		err = cb(f)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func downloadFile(ctx context.Context, u, target string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
-		return
+		return err
 	}
 
-	filename = filepath.Base(req.URL.Path)
-	if filename == "" || !strings.HasSuffix(filename, ".ext") || strings.TrimSuffix(filename, ".ext") == "" {
-		err = fmt.Errorf("invalid filename: %s", filename)
-		return
-	}
-
-	f, err := os.OpenFile(filepath.Join(dir, filename), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		return
+		return err
 	}
 	defer f.Close()
 
@@ -33,22 +52,22 @@ func downloadFile(ctx context.Context, u, dir string) (filename string, err erro
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("http status code: %d", resp.StatusCode)
-		return
+		return err
 	}
 
 	defer resp.Body.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
-		return
+		return err
 	}
 
-	return
+	return nil
 }
 
 // https://gist.github.com/paulerickson/6d8650947ee4e3f3dbcc28fde10eaae7

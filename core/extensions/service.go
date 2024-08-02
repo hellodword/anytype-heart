@@ -1,12 +1,13 @@
 package extensions
 
 import (
+	"archive/zip"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/anyproto/any-sync/app"
@@ -16,10 +17,15 @@ import (
 	"github.com/anyproto/anytype-heart/pkg/lib/logging"
 	"github.com/anyproto/anytype-heart/pkg/lib/pb/model"
 	extism "github.com/extism/go-sdk"
-	"go.uber.org/zap"
+	"github.com/google/uuid"
 )
 
 const CName = "extensions"
+
+const (
+	manifestFileName   = "manifest.json"
+	extensionsFileName = "extensions.json"
+)
 
 var log = logging.Logger(CName)
 
@@ -40,7 +46,6 @@ func New() Service {
 }
 
 type Extension struct {
-	ID       string                   `json:"id"`
 	Enabled  bool                     `json:"enabled"`
 	core     *extism.Plugin           `json:"-"`
 	manifest *model.ExtensionManifest `json:"-"`
@@ -53,10 +58,10 @@ type service struct {
 
 	extensions map[string]*Extension
 
-	repoPath          string
-	rootPath          string
-	downloadRootPath  string
-	extractedRootPath string
+	repoPath           string
+	rootPath           string
+	downloadRootPath   string
+	extensionsRootPath string
 
 	fileService       files.Service
 	fileObjectService fileobject.Service
@@ -75,14 +80,22 @@ func (s *service) Init(a *app.App) error {
 	s.repoPath = app.MustComponent[wallet.Wallet](a).RepoPath()
 	s.rootPath = app.MustComponent[wallet.Wallet](a).RootPath()
 	s.downloadRootPath = filepath.Join(s.rootPath, "extensions", "download")
-	s.extractedRootPath = filepath.Join(s.rootPath, "extensions", "extracted")
+	s.extensionsRootPath = filepath.Join(s.repoPath, "extensions")
+
+	if err := os.MkdirAll(s.downloadRootPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(s.extensionsRootPath, os.ModePerm); err != nil {
+		return err
+	}
 
 	if err := s.loadConfig(); err != nil {
 		return err
 	}
 
 	for k, v := range s.extensions {
-		manifest, err := s.parse(k)
+		manifest, err := s.parse(filepath.Join(s.extensionsRootPath, k, manifestFileName))
 		if err != nil {
 			delete(s.extensions, k)
 			continue
@@ -90,7 +103,7 @@ func (s *service) Init(a *app.App) error {
 		v.manifest = manifest
 
 		if v.Enabled {
-			if err := s.enable(v.ID); err != nil {
+			if err := s.load(k); err != nil {
 				delete(s.extensions, k)
 				continue
 			}
@@ -105,10 +118,7 @@ func (s *service) Init(a *app.App) error {
 }
 
 func (s *service) loadConfig() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	conf := filepath.Join(s.repoPath, "extensions.json")
+	conf := filepath.Join(s.repoPath, extensionsFileName)
 	f, err := os.Open(conf)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -122,10 +132,7 @@ func (s *service) loadConfig() error {
 }
 
 func (s *service) saveConfig() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	conf := filepath.Join(s.repoPath, "extensions.json")
+	conf := filepath.Join(s.repoPath, extensionsFileName)
 	f, err := os.OpenFile(conf, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -154,9 +161,8 @@ func (s *service) ListInstalled(ctx context.Context) ([]*model.ExtensionInfo, er
 	var result = []*model.ExtensionInfo{}
 	for _, v := range s.extensions {
 		result = append(result, &model.ExtensionInfo{
-			ExtensionId: v.ID,
-			Enabled:     v.Enabled,
-			Manifest:    v.manifest,
+			Enabled:  v.Enabled,
+			Manifest: v.manifest,
 			// Functions: ,
 		})
 	}
@@ -164,43 +170,76 @@ func (s *service) ListInstalled(ctx context.Context) ([]*model.ExtensionInfo, er
 }
 
 func (s *service) InstallFromURL(ctx context.Context, u string) (*model.ExtensionInfo, error) {
-	log.Info("InstallFromURL", zap.String("url", u))
+	targetPath := filepath.Join(s.downloadRootPath, uuid.New().String()+".dl")
+	defer os.Remove(targetPath)
 
-	if !s.developerMode {
-		return nil, errors.New("not in developer mode")
-	}
-
-	filename, err := downloadFile(ctx, u, s.downloadRootPath)
+	err := downloadFile(ctx, u, targetPath)
 	if err != nil {
 		return nil, err
 	}
 
-	zipPath := filepath.Join(s.downloadRootPath, filename)
-	extracted := filepath.Join(s.extractedRootPath, strings.TrimSuffix(filename, ".ext"))
+	return s.installFromZip(ctx, targetPath)
+}
+
+func (s *service) InstallFromZip(ctx context.Context, zipPath string) (*model.ExtensionInfo, error) {
+	return s.installFromZip(ctx, zipPath)
+}
+
+func (s *service) installFromZip(ctx context.Context, zipPath string) (*model.ExtensionInfo, error) {
+	var manifest model.ExtensionManifest
+	err := readSingleFromZip(zipPath, func(f *zip.File) error {
+		if f.Name != manifestFileName {
+			return nil
+		}
+
+		rc, e := f.Open()
+		if e != nil {
+			return e
+		}
+		defer rc.Close()
+
+		return json.NewDecoder(rc).Decode(&manifest)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !isValidUUID(manifest.Id) {
+		err = fmt.Errorf("invalid id %s", manifest.Id)
+		return nil, err
+	}
+
+	extracted := filepath.Join(s.extensionsRootPath, manifest.Id)
+
 	err = unzip(zipPath, extracted)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.install(ctx, extracted)
+	return s.install(ctx, manifest.Id)
 }
 
-func (s *service) InstallFromZip(ctx context.Context, zipPath string) (*model.ExtensionInfo, error) {
-	filename := filepath.Base(zipPath)
-	extracted := filepath.Join(s.extractedRootPath, strings.TrimSuffix(filename, ".ext"))
-	err := unzip(zipPath, extracted)
+func (s *service) install(ctx context.Context, extensionId string) (*model.ExtensionInfo, error) {
+	manifest, err := s.parse(filepath.Join(s.extensionsRootPath, extensionId, manifestFileName))
 	if err != nil {
 		return nil, err
 	}
 
-	return s.install(ctx, extracted)
-}
+	extension := &Extension{
+		Enabled:  true,
+		manifest: manifest,
+	}
 
-func (s *service) install(ctx context.Context, extracted string) (*model.ExtensionInfo, error) {
-	// parse
-	// move
-	// save config
-	// enable
+	s.lock.Lock()
+	s.extensions[manifest.Id] = extension
+	s.lock.Unlock()
+
+	_ = s.saveConfig()
+
+	err = s.load(extensionId)
+	if err != nil {
+		return nil, err
+	}
 
 	// manifest := extism.Manifest{
 	// 	Wasm: []extism.Wasm{
@@ -225,23 +264,64 @@ func (s *service) install(ctx context.Context, extracted string) (*model.Extensi
 	// s.plugins[u] = plugin
 	// s.plugins["id1"] = plugin
 
-	return &model.ExtensionInfo{}, nil
+	return &model.ExtensionInfo{
+		Enabled:  extension.Enabled,
+		Manifest: extension.manifest,
+		// Functions: ,
+	}, nil
 }
 
 func (s *service) Enable(ctx context.Context, extensionId string) error {
-	return s.enable(extensionId)
+	if _, ok := s.extensions[extensionId]; !ok {
+		err := errors.New("extension not exist")
+		return err
+	}
+
+	s.lock.Lock()
+	s.extensions[extensionId].Enabled = true
+	s.lock.Unlock()
+
+	_ = s.saveConfig()
+
+	return s.load(extensionId)
 }
 
-func (s *service) parse(extensionId string) (*model.ExtensionManifest, error) {
-	return nil, errors.New("TODO")
-}
-
-func (s *service) enable(extensionId string) error {
+func (s *service) load(extensionId string) error {
 	return errors.New("TODO")
 }
 
 func (s *service) Disable(ctx context.Context, extensionId string) error {
+	if _, ok := s.extensions[extensionId]; !ok {
+		err := errors.New("extension not exist")
+		return err
+	}
+
+	s.lock.Lock()
+	s.extensions[extensionId].Enabled = false
+	s.lock.Unlock()
+
+	_ = s.saveConfig()
+
+	return s.unload(extensionId)
+}
+
+func (s *service) unload(extensionId string) error {
 	return errors.New("TODO")
+}
+
+func (s *service) parse(manifestFile string) (*model.ExtensionManifest, error) {
+	f, err := os.Open(manifestFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var manifest model.ExtensionManifest
+	err = json.NewDecoder(f).Decode(&manifest)
+	if err != nil {
+		return nil, err
+	}
+
+	return &manifest, nil
 }
 
 func (s *service) Call(ctx context.Context, extensionId, functionName, blockId string) error {

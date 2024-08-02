@@ -1342,17 +1342,18 @@ enum ExtensionManifestPlatformType {
 }
 
 message ExtensionManifest {
-    ExtensionManifestExtism extism = 1;
-    ExtensionManifestVersionType manifest_version = 2;
-    string name = 3;
-    string version = 4;
-    string description = 5;
-    ExtensionManifestIcons icons = 6;
-    string homepage_url = 7;
-    string minimum_heart_version = 8;
-    repeated ExtensionManifestScopeType scopes = 9;
-    repeated ExtensionManifestPlatformType platforms = 10;
-    repeated string commands = 11;
+    string id = 1;
+    ExtensionManifestExtism extism = 2;
+    ExtensionManifestVersionType manifest_version = 3;
+    string name = 4;
+    string version = 5;
+    string description = 6;
+    ExtensionManifestIcons icons = 7;
+    string homepage_url = 8;
+    string minimum_heart_version = 9;
+    repeated ExtensionManifestScopeType scopes = 10;
+    repeated ExtensionManifestPlatformType platforms = 11;
+    repeated string commands = 12;
 }
 
 message ExtensionFunction {
@@ -1361,8 +1362,7 @@ message ExtensionFunction {
 }
 
 message ExtensionInfo {
-    string extension_id = 1;
-    bool enabled = 2;
-    ExtensionManifest manifest = 3;
-    repeated ExtensionFunction functions = 4;
+    bool enabled = 1;
+    ExtensionManifest manifest = 2;
+    repeated ExtensionFunction functions = 3;
 }
