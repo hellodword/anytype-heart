@@ -1309,8 +1309,7 @@ message DeviceInfo {
 }
 
 enum ExtensionManifestVersionType {
-    TYPE_UNKNOWN = 0;
-    TYPE_1 = 1;
+    TYPE_1 = 0;
 }
 
 message ExtensionManifestExtism {
@@ -1325,20 +1324,18 @@ message ExtensionManifestIcons {
 }
 
 enum ExtensionManifestScopeType {
-    SCOPE_UNKNOWN = 0;
-    SCOPE_SPACE = 1;
-    SCOPE_SET = 2;
-    SCOPE_PAGE = 3;
-    SCOPE_OBJECT = 4;
+    SCOPE_SPACE = 0;
+    SCOPE_SET = 1;
+    SCOPE_PAGE = 2;
+    SCOPE_OBJECT = 3;
 }
 
 enum ExtensionManifestPlatformType {
-    PLATFORM_UNKNOWN = 0;
+    PLATFORM_ANDROID = 0;
     PLATFORM_IOS = 1;
-    PLATFORM_ANDROID = 2;
+    PLATFORM_WINDOWS = 2;
     PLATFORM_LINUX = 3;
-    PLATFORM_WINDOWS = 4;
-    PLATFORM_DARWIN = 5;
+    PLATFORM_DARWIN = 4;
 }
 
 message ExtensionFunctionEntry {
