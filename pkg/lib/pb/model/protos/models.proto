@@ -1341,6 +1341,16 @@ enum ExtensionManifestPlatformType {
     PLATFORM_DARWIN = 5;
 }
 
+message ExtensionFunctionEntry {
+    ExtensionManifestScopeType scope = 1;
+    string text = 2;
+}
+
+message ExtensionFunction {
+    string function_name = 1;
+    repeated ExtensionFunctionEntry entries = 2;
+}
+
 message ExtensionManifest {
     string id = 1;
     ExtensionManifestExtism extism = 2;
@@ -1353,16 +1363,10 @@ message ExtensionManifest {
     string minimum_heart_version = 9;
     repeated ExtensionManifestScopeType scopes = 10;
     repeated ExtensionManifestPlatformType platforms = 11;
-    repeated string commands = 12;
-}
-
-message ExtensionFunction {
-    string function_id = 1;
-    string function_name = 2;
+    repeated ExtensionFunction functions = 12;
 }
 
 message ExtensionInfo {
     bool enabled = 1;
     ExtensionManifest manifest = 2;
-    repeated ExtensionFunction functions = 3;
 }
